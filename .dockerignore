@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Git
+.git
+.gitignore
+
+# IDE / OS
+.idea
+.DS_Store
+
+# Framework / build artifacts
+.svelte-kit
+**/.svelte-kit
+build
+**/build
+dist
+**/dist
+.next
+.cache
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+.sec
+
+# Logs / temporary files
+*.log
+*.bak
+
+# Misc generated data
+.mysql
+.aux
