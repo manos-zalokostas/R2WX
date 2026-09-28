@@ -1,0 +1,42 @@
+### GET TOOL 'CATEGORIES'
+ GET http://localhost:4000/stat_category
+Accept: application/json
+Authorization: Bearer R2wx-SERVER-SECRET-XXXX
+X-USER-ROLE: GLOB
+
+
+
+### Send POST request with json body
+POST http://localhost:4000/user
+Content-Type: application/json
+Authorization: Bearer R2wx-SERVER-SECRET-XXXX
+X-USER-ROLE: GLOB
+
+{
+  "email": "admin@example.com",
+  "pass": "adminpass"
+}
+
+
+### Send POST request with INVALID 999 json body
+POST http://localhost:4000/samx
+Content-Type: application/json
+Authorization: Bearer R2wx-SERVER-SECRET-XXXX
+X-USER-ROLE: GLOB
+
+{
+  "name": "TEST-HARSH-INPUTS",
+  "description": "SOMEHARSHDESCRIPTION",
+  "status": "DRAFT",
+  "priority": "CRITICAL",
+  "effort": "0",
+  "progress": "0",
+  "starts_at": "2026-09-28",
+  "due_at": "2026-09-28",
+  "billable": "false",
+  "activet": "rue",
+  "category_id": "999",
+  "owner_id": "undefined"
+}
+
+###

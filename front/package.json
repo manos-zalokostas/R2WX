@@ -1,0 +1,48 @@
+{
+  "name": "front",
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "dev": "vite dev --port 5000 --host",
+    "debug": "NODE_OPTIONS='--inspect=0.0.0.0:9229' vite dev --port 5000 --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "PORT=5000 node build/index.js",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
+    "watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
+    "lint": "prettier --plugin-search-dir . --check .",
+    "format": "prettier --plugin-search-dir . --write ."
+
+  },
+  "devDependencies": {
+    "@fontsource/fira-mono": "^5.1.1",
+    "@neoconfetti/svelte": "^2.2.1",
+    "@sveltejs/adapter-node": "^5.2.11",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.2",
+    "sass": "^1.83.1",
+    "svelte": "^5",
+    "svelte-check": "^4.1.2",
+    "svelte-preprocess": "^6.0.3",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@sveltejs/kit": "^2.15.2",
+    "chart.js": "^4.4.7",
+    "d3-scale": "^4.0.2",
+    "date-picker-svelte": "^2.15.1",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "font-awesome": "^4.7.0",
+    "npm-check-updates": "^17.1.13",
+    "picomatch": "^4.0.2",
+    "qr-code-styling": "1.9.0",
+    "w3-css": "^4.1.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "@r2wx/modules": "workspace:*"
+  }
+}

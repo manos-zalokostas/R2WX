@@ -1,0 +1,442 @@
+1, Backend Service:
+back/src/routes/samx/Samx.service.ts
+(To prove whether owner_id is sanitized or if Prisma queries are intercepted).
+===============
+import {BaseService} from "@core/base/BaseService";
+import {DbService} from "@core/datab/db.service";
+import {Injectable} from '@nestjs/common';
+import {entity} from "./config";
+
+
+@Injectable({})
+export class SamxService extends BaseService {
+
+
+    /**
+     *
+     * @param db
+     */
+    constructor(
+        protected db: DbService,
+    ) {
+        super(db, entity);
+    }
+
+}
+
+
+2. Lookup Controller & Config (One representative pair):
+back/src/routes/stat_category/config.ts
+back/src/routes/stat_category/StatCategory.controller.ts
+(To verify that lookup tables inherit BaseController identically without bespoke endpoints).
+===============
+import {ACCESS, PATH} from "@core/config/app.constants";
+import {statCategoryScheme} from "@r2wx/modules";
+
+export const entity = 'STAT_CATEGORY';
+
+export const path = 'stat_category';
+
+export const api = {
+    GET: {
+        [PATH._]: [ACCESS.GLOB],
+    },
+}
+
+export const type = statCategoryScheme
+
+--------------
+
+import {StatCategoryService} from "@route/stat_category/StatCategory.service";
+import {BaseController} from "@core/base/BaseController";
+import {Controller, Get,} from '@nestjs/common';
+import {path, type, api} from "./config";
+
+
+/**
+ *
+ */
+@Controller(path)
+export class StatCategoryController extends BaseController {
+
+
+    /**
+     *
+     * @param service
+     */
+    constructor(
+        service: StatCategoryService,
+    ) {
+        super(
+            service,
+            type,
+            api,
+        )
+    }
+
+
+}
+
+
+
+
+3. Frontend Helpers:
+The exact source code for makeOptions (usually in front/src/lib/index.js or $lib).
+(To prove how relational foreign keys are transformed into DOM options).
+===============
+/**
+ *
+ * @param raw
+ * @param field
+ * @returns {{lit: *[], type: *[]}}
+ */
+export const makeOptions = (raw, field = 'name') => {
+    if (!Array.isArray(raw)) raw = Object.entries(raw)
+    let data = {type: [], lit: []}
+    raw.forEach(o => {
+        data.type.push(o.id)
+        data.lit.push(o[field] || o.id)
+    })
+    return data;
+}
+
+
+4. The Concrete Evidence (One Saved SAMX Record):
+Paste one JSON record from the database for TOOL_SAMX (just like you did for SAM).
+(This will definitively reveal whether MySQL stored owner_id as 0 or null, and how starts_at / due_at were committed).
+===============
+- THE RECORD FROM THE DB EXPORT
+----------
+[
+  {
+    "id": 5,
+    "name": "TEST-HARSH-INPUTS",
+    "description": "SOME HARSH DESCRIPTION",
+    "status": "DRAFT",
+    "priority": "CRITICAL",
+    "effort": 0,
+    "progress": 0,
+    "starts_at": "2026-09-28 00:00:00.000",
+    "due_at": "2026-09-28 00:00:00.000",
+    "billable": 0,
+    "active": 1,
+    "category_id": 2,
+    "owner_id": null,
+    "created": "2026-09-28 08:28:03.948",
+    "updated": "2026-09-28 08:28:03.948"
+  }
+]
+
+
+++ HERES HOW VALIDATION HANDLED IT
+------------------------
+r2wx-backend-dev  | ________________________________________________________ { userRole: 'GLOB', accessLevel: 5 }
+r2wx-backend-dev  |  -- API INVOKED:: POST
+r2wx-backend-dev  |  -- AUTHZ REQUEST ROLE ==============>  5
+r2wx-backend-dev  |   -- CHECK ENDPOINT-ACCESSIBILITY
+r2wx-backend-dev  |   -- CHECK:: ENDPOINT EXPOSED
+r2wx-backend-dev  |   => ASSURED ENDPOINT EXPOSED
+r2wx-backend-dev  |   -- CHECK:: WEB-SOCKET MISSCONFIGURED
+r2wx-backend-dev  |   => ASSURED:: WEB-SOCKET NOT MISSCONFIGURED
+r2wx-backend-dev  |   -- CHECK:: USER AUTHORIZED
+r2wx-backend-dev  |  __INIT__ :: ** STRICT ** VALIDATION ENABLED
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="id" + VAL="undefined"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'number',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   min: 1,
+r2wx-backend-dev  |   max: 1000,
+r2wx-backend-dev  |   step: 1,
+r2wx-backend-dev  |   placeholder: 'number: i.e. 5'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: undefined, key: 'id', ruleType: 'number' }
+r2wx-backend-dev  |  -- CORE-TYPE:: SKIPPED AS NON-REQUIRED AND EMPTY
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="name" + VAL="TEST-HARSH-INPUTS"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'text',
+r2wx-backend-dev  |   required: true,
+r2wx-backend-dev  |   minLength: 3,
+r2wx-backend-dev  |   maxLength: 160,
+r2wx-backend-dev  |   placeholder: 'text: i.e. a name'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 'TEST-HARSH-INPUTS', key: 'name', ruleType: 'text' }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: 'TEST-HARSH-INPUTS', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: 'TEST-HARSH-INPUTS', type: 'string' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'TEST-HARSH-INPUTS',
+r2wx-backend-dev  |   attrKey: 'required',
+r2wx-backend-dev  |   attrValue: true
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 'TEST-HARSH-INPUTS', attrKey: 'minLength', attrValue: 3 }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'TEST-HARSH-INPUTS',
+r2wx-backend-dev  |   attrKey: 'maxLength',
+r2wx-backend-dev  |   attrValue: 160
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="description" + VAL="SOME HARSH DESCRIPTION"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'textarea',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   minLength: 3,
+r2wx-backend-dev  |   maxLength: 300,
+r2wx-backend-dev  |   placeholder: 'text: i.e.. some lengthy text'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'SOME HARSH DESCRIPTION',
+r2wx-backend-dev  |   key: 'description',
+r2wx-backend-dev  |   ruleType: 'textarea'
+r2wx-backend-dev  | }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: 'SOME HARSH DESCRIPTION', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: 'SOME HARSH DESCRIPTION', type: 'string' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'SOME HARSH DESCRIPTION',
+r2wx-backend-dev  |   attrKey: 'required',
+r2wx-backend-dev  |   attrValue: false
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'SOME HARSH DESCRIPTION',
+r2wx-backend-dev  |   attrKey: 'minLength',
+r2wx-backend-dev  |   attrValue: 3
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'SOME HARSH DESCRIPTION',
+r2wx-backend-dev  |   attrKey: 'maxLength',
+r2wx-backend-dev  |   attrValue: 300
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="status" + VAL="DRAFT"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'select',
+r2wx-backend-dev  |   required: true,
+r2wx-backend-dev  |   'data-options': [ 'DRAFT', 'READY', 'ACTIVE', 'PAUSED', 'CLOSED' ],
+r2wx-backend-dev  |   value: 'DRAFT'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 'DRAFT', key: 'status', ruleType: 'select' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 'DRAFT', attrKey: 'required', attrValue: true }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'DRAFT',
+r2wx-backend-dev  |   attrKey: 'data-options',
+r2wx-backend-dev  |   attrValue: [ 'DRAFT', 'READY', 'ACTIVE', 'PAUSED', 'CLOSED' ]
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="priority" + VAL="CRITICAL"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'select',
+r2wx-backend-dev  |   required: true,
+r2wx-backend-dev  |   'data-options': [ 'LOW', 'NORMAL', 'HIGH', 'CRITICAL' ],
+r2wx-backend-dev  |   value: 'CRITICAL'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 'CRITICAL', key: 'priority', ruleType: 'select' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 'CRITICAL', attrKey: 'required', attrValue: true }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'CRITICAL',
+r2wx-backend-dev  |   attrKey: 'data-options',
+r2wx-backend-dev  |   attrValue: [ 'LOW', 'NORMAL', 'HIGH', 'CRITICAL' ]
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="effort" + VAL="0"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'number',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   min: 0,
+r2wx-backend-dev  |   max: 1000,
+r2wx-backend-dev  |   step: 0.1,
+r2wx-backend-dev  |   placeholder: 'float: i.e. 5.05',
+r2wx-backend-dev  |   value: 0
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: '0', key: 'effort', ruleType: 'number' }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: '0', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: 0, type: 'number' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="progress" + VAL="0"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'number',
+r2wx-backend-dev  |   required: true,
+r2wx-backend-dev  |   min: 0,
+r2wx-backend-dev  |   max: 1000,
+r2wx-backend-dev  |   step: 1,
+r2wx-backend-dev  |   placeholder: 'number: i.e. 5',
+r2wx-backend-dev  |   value: 0
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: '0', key: 'progress', ruleType: 'number' }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: '0', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: 0, type: 'number' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 0, attrKey: 'required', attrValue: true }
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 0, attrKey: 'min', attrValue: 0 }
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 0, attrKey: 'max', attrValue: 1000 }
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 0, attrKey: 'step', attrValue: 1 }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="starts_at" + VAL="2026-09-28"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    { type: 'date', required: false, placeholder: 'Select a date' }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: '2026-09-28', key: 'starts_at', ruleType: 'date' }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: '2026-09-28', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: '2026-09-28T00:00:00.000Z', type: 'string' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: '2026-09-28T00:00:00.000Z',
+r2wx-backend-dev  |   attrKey: 'required',
+r2wx-backend-dev  |   attrValue: false
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="due_at" + VAL="2026-09-28"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    { type: 'date', required: false, placeholder: 'Select a date' }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: '2026-09-28', key: 'due_at', ruleType: 'date' }
+r2wx-backend-dev  | _______________________ TYPE BEFO::  { valueCurr: '2026-09-28', type: 'string' }
+r2wx-backend-dev  | _______________________ TYPE AFTE::  { valueNext: '2026-09-28T00:00:00.000Z', type: 'string' }
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: '2026-09-28T00:00:00.000Z',
+r2wx-backend-dev  |   attrKey: 'required',
+r2wx-backend-dev  |   attrValue: false
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="billable" + VAL="false"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'switch',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   checked: false,
+r2wx-backend-dev  |   'data-options': [ 'false', 'true' ],
+r2wx-backend-dev  |   value: 'false'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 'false', key: 'billable', ruleType: 'switch' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 'false', attrKey: 'required', attrValue: false }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'false',
+r2wx-backend-dev  |   attrKey: 'data-options',
+r2wx-backend-dev  |   attrValue: [ 'false', 'true' ]
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="active" + VAL="true"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'switch',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   checked: false,
+r2wx-backend-dev  |   'data-options': [ 'false', 'true' ],
+r2wx-backend-dev  |   value: 'true'
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 'true', key: 'active', ruleType: 'switch' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 'true', attrKey: 'required', attrValue: false }
+r2wx-backend-dev  |  -- ATTR EXAMINED {
+r2wx-backend-dev  |   valueCurr: 'true',
+r2wx-backend-dev  |   attrKey: 'data-options',
+r2wx-backend-dev  |   attrValue: [ 'false', 'true' ]
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="category_id" + VAL="2"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    { type: 'select', required: true, 'data-options': [ 1, 2, 3, 4, 5 ] }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: 2, key: 'category_id', ruleType: 'select' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 2, attrKey: 'required', attrValue: true }
+r2wx-backend-dev  |  -- ATTR EXAMINED { valueCurr: 2, attrKey: 'data-options', attrValue: [ 1, 2, 3, 4, 5 ] }
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="owner_id" + VAL="undefined"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    {
+r2wx-backend-dev  |   type: 'select',
+r2wx-backend-dev  |   required: false,
+r2wx-backend-dev  |   'data-options': [ 1, 2, 3, 4, 5 ],
+r2wx-backend-dev  |   value: 0
+r2wx-backend-dev  | }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: undefined, key: 'owner_id', ruleType: 'select' }
+r2wx-backend-dev  |  -- CORE-TYPE:: COMPLEX => SKIP AND EXAMINE NEXT W/ 'DATA-OPTIONS
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="created" + VAL="undefined"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    { type: 'date', required: false, placeholder: 'Select a date' }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: undefined, key: 'created', ruleType: 'date' }
+r2wx-backend-dev  |  -- CORE-TYPE:: SKIPPED AS NON-REQUIRED AND EMPTY
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  ALL RULES LOOPED => OK
+r2wx-backend-dev  |
+r2wx-backend-dev  |
+r2wx-backend-dev  |  ** RULES LOOPING =>  KEY="updated" + VAL="undefined"
+r2wx-backend-dev  | ============================================================
+r2wx-backend-dev  |   >> RULE SCHEME::    { type: 'date', required: false, placeholder: 'Select a date' }
+r2wx-backend-dev  |  -----------------------
+r2wx-backend-dev  |  -- CORE-TYPE EXAMINED { valueCurr: undefined, key: 'updated', ruleType: 'date' }
+r2wx-backend-dev  |  -- CORE-TYPE:: SKIPPED AS NON-REQUIRED AND EMPTY
+r2wx-backend-dev  |  -- ATTRS LOOP
+r2wx-backend-dev  |  -- ATTR:: SKIPPED AS NON-REQUIRED AND EMPTY'
+r2wx-backend-dev  |  ALL RULES LOOPED => OK

@@ -1,0 +1,10 @@
+{
+  "name": "@r2wx/modules",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/schemes/index.js",
+  "exports": {
+    ".": "./src/schemes/index.js",
+    "./*": "./src/*"
+  }
+}

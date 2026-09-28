@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("ENV_DBURL")
+}
+
+model TOOL_SAM {
+  id Int @id() @default(autoincrement())
+
+  name        String
+  number      Int      @db.MediumInt
+  float       Float
+  boolean     Boolean
+  description String   @db.LongText
+  date        DateTime
+
+  file_def Json?
+
+  file  Json
+  files Json
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model TOOL_SAMX {
+  id Int @id @default(autoincrement())
+
+  name        String  @db.VarChar(160)
+  description String? @db.Text
+
+  status   ENUM_STATUS   @default(DRAFT)
+  priority ENUM_PRIORITY @default(NORMAL)
+
+  effort   Float?
+  progress Int    @default(0)
+
+  starts_at DateTime?
+  due_at    DateTime?
+
+  billable Boolean @default(false)
+  active   Boolean @default(true)
+
+  category_id  Int
+  StatCategory STAT_CATEGORY @relation(fields: [category_id], references: [id])
+
+  owner_id Int?
+  Owner    OWNER? @relation(fields: [owner_id], references: [id])
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model STAT_CATEGORY {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(80)
+  active Boolean @default(true)
+
+  TOOL_SAMX TOOL_SAMX[]
+}
+
+model OWNER {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(120)
+  active Boolean @default(true)
+
+  TOOL_SAMX TOOL_SAMX[]
+}
+
+model APP_ORG {
+  id Int @id() @default(autoincrement())
+
+  name String
+
+  created DateTime  @default(now())
+  updated DateTime? @updatedAt
+
+  APP_ACCESS APP_ACCESS[]
+}
+
+model APP_USER {
+  id Int @id() @default(autoincrement())
+
+  first    String?
+  last     String?
+  email    String
+  password String
+
+  created DateTime  @default(now())
+  updated DateTime? @updatedAt
+
+  APP_ACCESS APP_ACCESS[]
+}
+
+model APP_ACCESS {
+  id Int @id() @default(autoincrement())
+
+  type ENUM_ROLE @default(GLOB)
+
+  user_id Int
+  AppUser APP_USER @relation(fields: user_id, references: id)
+
+  org_id  Int
+  StatOrg APP_ORG @relation(fields: org_id, references: id)
+
+  created DateTime  @default(now())
+  updated DateTime? @updatedAt
+}
+
+enum ENUM_ROLE {
+  GLOB
+  CREA
+  READ
+}
+
+enum ENUM_STATUS {
+  DRAFT
+  READY
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum ENUM_PRIORITY {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}

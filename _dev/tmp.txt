@@ -1,0 +1,281 @@
+FRONTEND
+===================
+- UPDATE 'COLLECT-FORM-DATA' (TO GET ALL FORM 'CHECKBOXES')
+---------
+export const collectFormData = (target = 'form.r2wx-form') => {
+
+    let form = document.querySelector(target),
+        formData = new FormData(form);
+
+    let data = {};
+
+    [...formData].forEach(
+        ([key, val]) => {
+
+            if (val === '\n') return;
+
+            if (['true', 'false'].includes(val)) val = (val === 'true');
+
+            if (parseInt(val) || parseFloat(val)) val = +val;
+
+            if (key in data) {
+                data[key] = Array.isArray(data[key]) ? [...data[key], val] : [data[key], val]
+                return data
+            }
+
+            data[key] = val
+        }
+    )
+
+    /*
+    COLLECT 'DATEPICKERS' (CHECKBOXES **)
+     */
+    let bools = [...document.querySelectorAll('input[type=checkbox]')]
+        .map(elem => [elem.name, elem.value])
+
+    bools.forEach(
+        ([id, val]) => data[id] = val
+    )
+
+    /*
+    COLLECT 'DATEPICKERS' (DATE **)
+     */
+    let dates = [...document.querySelectorAll(".r2wx-proxy-id")]
+        .map(o => (
+            [o.id, o.querySelector('input').value])
+        )
+
+    dates.forEach(
+        ([id, val]) => data[id] = val.split("-").reverse().join("-")
+    )
+
+    return data;
+}
+
+
+- PACK-ENTIFY-FORM (REMOVED THE [ELSE CURR-INPUT[VALUE]='' ])
+------------
+if (Array.isArray(data)) currInput["value"] = data.map(o => o[key])
+else if (data && data[key] !== undefined) currInput['value'] = data[key]
+else if (rule.value) currInput["value"] = rule.value
+// else currInput['value'] = ''
+
+- NEW 'SAM-X' ROUTE
+---------
+samx
+    [evt_id]
+    +page.server.js
+    +page.svelte
+    ctx.js
+
+++ THE 'PAGE.SERVER' THAT COLLECTS LOOKUPS (SELECT OPTIONS)
+----------
+import {localApi, dependencies, packEntityForm, makeOptions} from "$lib";
+import httpServer from "$lib/httpServer.js";
+import ctx from "./ctx.js";
+
+const {entity, typ, lit} = ctx();
+
+
+/** @tye {import('./$types').PageServerLoad} */
+export async function load({parent}) {
+
+    let [
+        {data: owners},
+        {data: categories},
+        cache,
+    ] = await dependencies(
+        httpServer.get("stat_owner"),
+        httpServer.get("stat_category"),
+        parent()
+    )
+
+    console.log(" -- CATEGORIES / OWNERS", {owners, categories})
+
+    const form = packEntityForm(typ, lit, null, {
+        id: {hidden: true},
+        _option: {
+            category_id: makeOptions(categories),
+            owner_id: makeOptions(owners),
+        }
+    });
+
+
+    return {
+        ...cache,
+        form,
+        _page: {
+            HEAD_H1: 'ΜΟΝΑΔΑ'
+        },
+    }
+
+}
+
+- NEW FRONT API-ROUTE (FRONT SEVER AT HTTP://LOCAL/API[TOOL_ID)
+-------
+import _authall from "$lib/server/authall.js";
+import {_reply} from "$lib/server/index.js";
+import httpServer from "$lib/httpServer.js";
+import {ROLE} from "$var";
+
+
+export async function POST(ctx) {
+    try {
+
+        const Auth = _authall();
+        if (!Auth.accessRole(ctx, ROLE.GLOB)) return _reply({error: 'NOROL'});
+
+        const path = [
+            ctx.params.tool_id,
+        ].join("/")
+
+        const data = await ctx.request.json();
+        console.log(" -- POST:: PATH / DATA:: ", {path, data})
+        const res = await httpServer.post(path, data)
+
+        console.log(" -- POST:: RES:: ", res)
+        return _reply(res);
+
+    } catch (error) {
+        console.log("++++++++++++++++++++++", error)
+        throw new Error(error);
+    }
+}
+
+- CONSTANTS (+ STRUCTURE )
+** ADD THE NEW 'SAM-X' PATH
+-----------
+export const TOOL = {
+    SAM: 'SAM',
+    SAMX: 'SAMX',
+}
+
+export const PAGE = {
+....
+    STCRE: ["create record", '/entities', ROLE.GLOB],
+    STLAT: ["latest records", '/events/latest', ROLE.READ],
+    STSER: ["search records", '/events/search', ROLE.READ],
+
+    TOOLA: ["available entities", '/entities', ROLE.GLOB],
+
+    [TOOL.SAM]: ["ENTITY:: SAM ", '/entities/sam', ROLE.GLOB],
+    [TOOL.SAMX]: ["ENTITY:: SAM-X ", '/entities/samx', ROLE.GLOB],
+...
+
+
+BACKEND
+====================
+- NEW ROUTES (SAM-X + LOOKUPS)
+--------
+samx
+    config.ts
+    Samx.controller.ts
+    Samx.module.ts
+    Samx.service.ts
+stat_category
+    config.ts
+    StatCategory.controller.ts
+    StatCategory.module.ts
+    StatCategory.service.ts
+stat_owner
+    config.ts
+    StatOwner.controller.ts
+    StatOwner.module.ts
+    StatOwner.service.ts
+
+- UPDATE 'APP-MODULES'
+----------------
+        StatCategoryModule,
+        StatOwnerModule,
+
+        SamModule,
+        SamxModule,
+
+
+
+MODULES/SCHEMES
+=================
+** ADD THE NEW SCHEMES
+---------
+samx
+    index.js
+    lit.js
+stat-category
+    index.js
+    lit.js
+stat-owner
+    index.js
+    lit.js
+
+++ EXPORT THEM FROM 'SCHEMES ROOT'
+---------
+export { default as samxScheme } from "./samx/index.js";
+export { default as samxLit } from "./samx/lit.js";
+
+export { default as statOwnerScheme } from "./stat-owner/index.js";
+export { default as statCategoryScheme } from "./stat-category/index.js";
+
+
+
+PRISMA
+=================
+
+model TOOL_SAMX {
+  id Int @id @default(autoincrement())
+
+  name        String  @db.VarChar(160)
+  description String? @db.Text
+
+  status   ENUM_STATUS   @default(DRAFT)
+  priority ENUM_PRIORITY @default(NORMAL)
+
+  effort   Float?
+  progress Int    @default(0)
+
+  starts_at DateTime?
+  due_at    DateTime?
+
+  billable Boolean @default(false)
+  active   Boolean @default(true)
+
+  category_id  Int
+  StatCategory STAT_CATEGORY @relation(fields: [category_id], references: [id])
+
+  owner_id Int?
+  Owner    OWNER? @relation(fields: [owner_id], references: [id])
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+}
+
+model STAT_CATEGORY {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(80)
+  active Boolean @default(true)
+
+  TOOL_SAMX TOOL_SAMX[]
+}
+
+model OWNER {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(120)
+  active Boolean @default(true)
+
+  TOOL_SAMX TOOL_SAMX[]
+}
+
+enum ENUM_STATUS {
+  DRAFT
+  READY
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum ENUM_PRIORITY {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+

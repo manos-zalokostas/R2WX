@@ -1,0 +1,57 @@
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: front/Dockerfile
+    container_name: r2wx-frontend-dev
+    ports:
+      - "5000:5000"
+      - "9229:9229"
+    volumes:
+      - ./modules:/usr/src/app/modules
+      - ./front:/usr/src/app/front
+      - ./pnpm-workspace.yaml:/usr/src/app/pnpm-workspace.yaml:ro
+      - ./package.json:/usr/src/app/package.json:ro
+      - ./pnpm-lock.yaml:/usr/src/app/pnpm-lock.yaml:ro
+      - /usr/src/app/front/node_modules
+      - /usr/src/app/node_modules
+    command: sh -c "pnpm --filter front run debug"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING="true"
+    networks:
+      - r2wx_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+    container_name: r2wx-backend-dev
+    ports:
+      - "4000:4000"
+      - "9230:9230"
+    volumes:
+      - ./modules:/usr/src/app/modules
+      - ./back:/usr/src/app/back
+      - ./pnpm-workspace.yaml:/usr/src/app/pnpm-workspace.yaml:ro
+      - ./package.json:/usr/src/app/package.json:ro
+      - ./pnpm-lock.yaml:/usr/src/app/pnpm-lock.yaml:ro
+      - /usr/src/app/back/node_modules
+      - /usr/src/app/node_modules
+    command: >
+      sh -c "pnpm --filter back exec prisma generate && pnpm --filter back run debug"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      ENV_DBHOST: database
+      ENV_DBURL: "mysql://${ENV_DBUSER}:${ENV_DBPASS}@database:3306/${ENV_DBNAME}"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - r2wx_network

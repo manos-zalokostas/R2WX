@@ -1,0 +1,44 @@
+{
+  "name": "r2wx",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "front:dev": "pnpm --filter front dev",
+    "front:bui": "pnpm --filter front build",
+    "front:pro": "pnpm --filter front start",
+    "front:deb": "pnpm --filter front run debug",
+    "back:dev": "pnpm --filter back dev",
+    "back:bui": "pnpm --filter back build",
+    "back:pro": "pnpm --filter back prod",
+    "back:deb": "pnpm --filter back debug",
+    "all:dev": "concurrently \"pnpm front:dev\" \"pnpm back:dev\"",
+    "all:deb": "concurrently \"pnpm front:deb\" \"pnpm back:deb\"",
+    "all:pro": "concurrently \"pnpm front:pro\" \"pnpm back:pro\"",
+    "all:bui": "pnpm front:bui && pnpm back:bui"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.1+sha512.e519b9f7639869dc8d5c3c5dfef73b3f091094b0a006d7317353c72b124e80e1afd429732e28705ad6bfa1ee879c1fce46c128ccebd3192101f43dd67c667912",
+  "pnpm": {
+    "overrides": {
+      "cookie": "^0.6.0",
+      "multer@>=1.4.4-lts.1 <2.0.0": ">=2.0.0"
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "argon2",
+      "esbuild",
+      "prisma",
+      "svelte-preprocess"
+    ]
+  }
+}

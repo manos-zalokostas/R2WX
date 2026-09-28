@@ -1,0 +1,12 @@
+packages:
+  - front
+  - back
+  - modules
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - prisma
+  - svelte-preprocess
