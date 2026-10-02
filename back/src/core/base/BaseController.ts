@@ -10,19 +10,14 @@ import {
     ParseIntPipe, Optional,
 } from '@nestjs/common';
 import {PATH, ERR, HTTP, VALID, ACCESS} from "@core/config/app.constants";
+import {MulterService} from "@core/service/multer/Multer.service";
 import {Validation} from "@core/service/validation/Validation";
-import {EventGateway} from "@core/event/event.gateway";
-import {v4 as uuidv4, validate as isUuid} from 'uuid';
 import {Request, Response} from 'express';
 import {join, basename} from 'path';
+import {unlink} from "fs/promises";
 import * as fs from 'fs';
 
 
-import {___serverLog} from "@core/devtool"
-import SAM from "@core/base/sam";
-import {DevtoolService} from "@core/devtool/devtool.service";
-import {MulterService} from "@core/service/multer/Multer.service";
-import {unlink} from "fs/promises";
 
 type RequestAuthz = Request & { userAccess?: number };
 
@@ -39,8 +34,6 @@ export class BaseController {
         protected scheme,
         protected api,
         @Optional() protected readonly svMulter?: MulterService,
-        @Optional() protected eventGateway?: EventGateway,
-        @Optional() protected readonly svDev?: DevtoolService,
     ) {
         this.validate = new Validation()
     }
@@ -122,8 +115,6 @@ export class BaseController {
 
         if (!fs.existsSync(absolutePath)) throw ERR.FFNO
 
-        // res.setHeader('Content-Type', "application/pdf");
-
         return res.sendFile(absolutePath);
     }
 
@@ -195,9 +186,9 @@ export class BaseController {
 
             this._assureDataValid(data, VALID.STRICT);
 
-            await this.service.create(data);
+            const resp = await this.service.create(data);
 
-            return {data: {user: data.email, pass: 'xxx'}}
+            return {data: resp}
 
         } catch (error) {
             console.log({error})
@@ -252,55 +243,6 @@ export class BaseController {
 
     /**
      *
-     * @param req
-     * @param res
-     */
-    @Post(PATH.MULWS)
-    async createMultiWS(@Req() req: RequestAuthz, @Res() res: Response) {
-        let files: Express.Multer.File[] = [];
-        try {
-            console.log(" -- AUTHZ REQUEST ROLE ==============> ", req.userAccess)
-            this._assureEndpointAccessible(HTTP.POST, PATH.MULWS, req.userAccess)
-
-            await this.svMulter.processWs(req, res);
-
-            files = Object.values(req.files || {}).flat();
-
-            const {ruleBody} = this._splitRules();
-            this._assureDataValid(req.body, VALID.STRICT, ruleBody);
-
-            const clientProvidedId = req.body.uploadSessionId;
-            const sessionId = (clientProvidedId && isUuid(clientProvidedId))
-                ? clientProvidedId  // Use the client's valid ID.
-                : uuidv4();         // Or, generate a new, guaranteed-valid ID.
-
-            this.svDev.mockEDAFileProcessing(this, sessionId, files);
-
-            // 5. Immediately respond to the client.
-            const data = {
-                message: 'Upload accepted for processing.',
-                sessionId: sessionId,
-            };
-            return this._reply([data, null], res, 202);
-
-        } catch (error) {
-            // This catch block now handles failures from _assure... and multer,
-            // INCLUDING the new _assureDataValid check.
-
-            // If an error occurred, we must clean up any files multer already saved.
-            files.forEach(file => {
-                if (fs.existsSync(file.path)) {
-                    fs.unlinkSync(file.path);
-                }
-            });
-
-            return this._reply([null, error], res);
-        }
-    }
-
-
-    /**
-     *
      * @param id
      * @param data
      */
@@ -316,10 +258,12 @@ export class BaseController {
 
             this._assureEndpointAccessible(HTTP.PUT, PATH.ID, req.userAccess)
 
-            data = SAM;
             this._assureDataValid(data, VALID.LOOSE);
 
-            return {data: [1, 2, 3]}
+            const clause = {where: {id}}
+            const result = await this.service.update(data, clause);
+
+            return {data: result}
 
         } catch (error) {
             console.log({error})
@@ -417,26 +361,10 @@ export class BaseController {
 
         this._assureEndpointExposed(verb, path)
 
-        // WEB-SOCKET 2nd LINE OF DEFENCE DUE TO CRITICAL NATURE OF WS
-        this._assureWebSocketConfiguration(path)
-
         this._assureUserAuthorized(verb, path, userAccess)
 
     }
 
-
-    /**
-     *
-     * @param verb
-     * @param path
-     */
-    _assureWebSocketConfiguration(path) {
-        console.log("  -- CHECK:: WEB-SOCKET MISSCONFIGURED")
-
-        if (path === PATH.MULWS && !this.eventGateway) throw ERR.WSOC;
-
-        console.log("  => ASSURED:: WEB-SOCKET NOT MISSCONFIGURED")
-    }
 
 
     /**
@@ -493,6 +421,54 @@ export class BaseController {
 
         if (!this.validate[type](data, schemeCurr)) throw ERR.INPUT
 
+    }
+
+
+
+    /**
+     *
+     * @private
+     */
+    async _loadSchemeOptions(dict) {
+
+        const deps = await Promise.all(
+            Object.values(dict).map(
+                // @ts-ignore
+                sv => sv.findMany({})
+            )
+        )
+
+        console.log(" __________________________ DEPENDENCIES LOADED ___________________")
+        console.log(JSON.stringify(deps))
+
+        Object.entries(dict)
+            .forEach(
+                ([key, sv], i) => {
+                    dict[key] = deps[i].map(({id}) => id)
+                }
+            )
+
+        console.log(" __________________________ DICTIONARY DATA FILLED ___________________")
+        console.log(JSON.stringify(dict))
+
+        const schemeNext = {
+            ...this.scheme,
+            ...Object.entries(dict)
+                .reduce(
+                    (acc, [key, data]) => {
+                        acc[key] = {
+                            ...this.scheme[key],
+                            ['data-options']: data
+                        };
+                        return acc;
+                    }, {}
+                )
+        }
+
+        console.log(" __________________________ SCHEME-FORCED CREATED ___________________")
+        console.log(JSON.stringify(schemeNext))
+
+        return schemeNext;
     }
 
 

@@ -6,8 +6,8 @@ import {low} from "$lib";
 
 export default () => ({
     entity: low(TOOL.SAMX),
-    typ: samxScheme,
-    lit: samxLit
+    typ: samxScheme(),
+    lit: samxLit()
 })
 
 

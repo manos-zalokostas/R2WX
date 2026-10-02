@@ -1,6 +1,8 @@
 import {localApi, dependencies, packEntityForm} from "$lib";
-import typ from "./typ.js";
-import lit from "./lit.js";
+import ctx from "./ctx.js"
+
+
+const {typ, lit} = ctx();
 
 
 /** @tye {import('./$types').PageServerLoad} */

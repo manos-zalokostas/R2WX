@@ -1,7 +1,10 @@
 import {StatCategoryService} from "@route/stat_category/StatCategory.service";
 import {BaseController} from "@core/base/BaseController";
 import {Controller, Get,} from '@nestjs/common';
-import {path, type, api} from "./config";
+import config from "./config";
+
+
+const {path, type, api} = config();
 
 
 /**

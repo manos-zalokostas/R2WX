@@ -6,7 +6,6 @@ export const PATH = {
 
     MULTI: "multipart",
     FPREV: "preview/:fid",
-    MULWS: 'multipart-ws',
     MULTI_ID: 'multipart/:id',
     FDOWN: ":event_id/type/:field_id/files/:file_id",
 
@@ -28,7 +27,6 @@ export const ERR = {
     VERB: 'INVALID HTTP METHOD',
     PATH: 'INVALID REQUEST PATH',
     ACCESS: 'INVALID ACCESS LEVEL',
-    WSOC: 'INVALID WS CONFIGURATION',
     FREQ: 'REQUIRED FILE MISSING',
     FSIZE: 'INVALID FILE SIZE',
     FRNO: 'File record not found',

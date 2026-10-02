@@ -1,3 +1,3 @@
-export const statOwnerLit = {};
+export const statOwnerLit = () => ({})
 
 export default statOwnerLit;

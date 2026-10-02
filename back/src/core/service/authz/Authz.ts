@@ -1,15 +1,16 @@
 import {Injectable, CanActivate, ExecutionContext, UnauthorizedException, ForbiddenException} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {ACCESS} from "@core/config/app.constants"; // For accessing environment variables
+import {ACCESS} from "@core/config/app.constants";
 
 @Injectable()
 export class AuthzGuard implements CanActivate {
 
     private readonly secretKey: string;
 
-    constructor(private configSv: ConfigService) {
+    constructor() {
         // We get the secret from environment variables once, during startup.
-        this.secretKey = this.configSv.get<string>('ENV_SERVER_SECRET');
+        // this.secretKey = this.configSv.get<string>('ENV_SERVER_SECRET');
+        // @ts-ignore
+        this.secretKey = process.env.ENV_SERVER_SECRET
 
         if (!this.secretKey) throw new Error('INTERNAL_API_SECRET is not defined in environment variables.');
     }

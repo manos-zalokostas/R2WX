@@ -1,6 +1,5 @@
 import {_reply} from "$lib/server";
 import _authall from "$lib/server/authall.js";
-import {redirect} from "@sveltejs/kit";
 import {ROLE} from "$var";
 
 /**
@@ -10,7 +9,7 @@ import {ROLE} from "$var";
  * @constructor
  */
 export async function POST(ctx) {
-
+debugger
     const Auth = _authall();
 
     let user = await Auth.login(ctx)

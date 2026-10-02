@@ -9,6 +9,7 @@
 
     const onclick = (mode = FORM.ADD, evt) => {
         evt.preventDefault();
+        debugger
         clearFormReports();
         $form.mode = mode;
         if ([FORM.ADD, FORM.EDIT].includes(mode)) {
@@ -32,17 +33,17 @@
         <span><SVG icon={SVGI.FORA} color="greenyellow"/></span>
     </button>
 {/if}
-{#if $active.isFormFilled}
+{#if $active.isFormFilled && !$form.isEdited}
     <button class="r2wx-shadowable-btn r2wx-edit"
             onclick={evt => onclick(FORM.EDIT, evt)}>
         <span><SVG icon={SVGI.FORE} color="lightblue"/></span>
         <strong class="r2wx-nomob">modify</strong>
     </button>
-    <button class="r2wx-shadowable-btn r2wx-del"
-            onclick={evt => onclick(FORM.DEL, evt)}>
-        <strong class="r2wx-nomob">remove</strong>
-        <span><SVG icon={SVGI.FORD} color="tomato" /></span>
-    </button>
+<!--    <button class="r2wx-shadowable-btn r2wx-del"-->
+<!--            onclick={evt => onclick(FORM.DEL, evt)}>-->
+<!--        <strong class="r2wx-nomob">remove</strong>-->
+<!--        <span><SVG icon={SVGI.FORD} color="tomato" /></span>-->
+<!--    </button>-->
 {/if}
 {#if $form.isEdited && !ctx.blockConfirm}
     <button class="r2wx-shadowable-btn r2wx-exit"

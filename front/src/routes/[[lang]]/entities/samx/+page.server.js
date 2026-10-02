@@ -2,7 +2,7 @@ import {localApi, dependencies, packEntityForm, makeOptions} from "$lib";
 import httpServer from "$lib/httpServer.js";
 import ctx from "./ctx.js";
 
-const {entity, typ, lit} = ctx();
+const {typ, lit} = ctx();
 
 
 /** @tye {import('./$types').PageServerLoad} */
@@ -17,7 +17,7 @@ export async function load({parent}) {
         httpServer.get("stat_category"),
         parent()
     )
-    
+
     console.log(" -- CATEGORIES / OWNERS", {owners, categories})
 
     const form = packEntityForm(typ, lit, null, {

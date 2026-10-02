@@ -1,22 +1,5 @@
 import {ENV_DATASERVER, ENV_SECRET} from "$env/static/private"
 import {schemaMod} from "$lib";
-// import http from "$lib/http.js";
-//
-//
-// /**
-//  *
-//  * @private
-//  */
-// export const _serverFetch = async (type, path, data = null) => {
-//     const meta = {"Authorization": "Bearer " + ENV_SECRET},
-//         url = http.url(path, ENV_DATASERVER)
-//
-//     const types = ['get', 'post', 'put', 'delete'];
-//     if (!(types.includes(type) && typeof http[type] === 'function')) throw 'TSIKIS BAM BOUM'
-//
-//     return await http[type](url, data, meta)
-//
-// }
 
 
 /**

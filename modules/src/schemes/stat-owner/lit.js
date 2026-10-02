@@ -1,4 +1,3 @@
-export const statCategoryLit = {
-};
+export const statCategoryLit = () => ({})
 
 export default statCategoryLit;

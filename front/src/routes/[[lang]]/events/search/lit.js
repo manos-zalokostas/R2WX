@@ -1,4 +1,4 @@
-export default {
+export default () => ({
     name: 'event name',
     type: [
         'tool type',
@@ -45,4 +45,4 @@ export default {
         ]
     ],
     detail: 'context & methodology',
-}
+})

@@ -1,5 +1,4 @@
 import {AuthzGuard} from "@core/service/authz/Authz";
-import { ConfigService } from '@nestjs/config';
 import { existsSync, mkdirSync } from 'fs';
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
@@ -16,8 +15,7 @@ async function bootstrap() {
 
     const app = await NestFactory.create(AppModule);
 
-    const configService = app.get(ConfigService);
-    app.useGlobalGuards(new AuthzGuard(configService));
+    app.useGlobalGuards(new AuthzGuard());
 
     app.enableCors();
     await app.listen(PORT);

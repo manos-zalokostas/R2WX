@@ -1,22 +1,15 @@
-import {ACCESS, PATH} from "@core/config/app.constants";
-import {T} from "@r2wx/modules";
+import {ACCESS, PATH} from "@core/config/app.constants"
+import {T, userAuthScheme} from "@r2wx/modules"
 
-export const entity = 'APP_USER';
+export default () => ({
+    path: 'user',
+    entity: 'APP_USER',
+    // @ts-ignore
+    type: userAuthScheme(),
+    api: {
+        POST: {
+            [PATH.AUTHN]: [ACCESS.VISIT],
+        },
+    }
 
-export const path = 'user';
-
-
-export const api = {
-    // GET: {
-    //     [PATH._]: [ACCESS.VISIT],
-    // },
-    POST: {
-        [PATH._]: [ACCESS.VISIT],
-        ['authenticate']: [ACCESS.VISIT],
-    },
-}
-
-export const type = {
-    "email": T.EMAI,
-    "pass": T.PASW,
-};
+})

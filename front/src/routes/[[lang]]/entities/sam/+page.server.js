@@ -1,7 +1,7 @@
 import {localApi, dependencies, packEntityForm} from "$lib";
 import ctx from "./ctx.js";
 
-const {entity, typ, lit} = ctx();
+const {typ, lit} = ctx();
 
 
 /** @tye {import('./$types').PageServerLoad} */
@@ -18,7 +18,7 @@ export async function load({parent}) {
         id: {hidden: true},
     });
 
-    
+
 
     return {
         ...cache,

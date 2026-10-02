@@ -1,1 +1,1 @@
-export const LIT = {}
+export const LIT = () =>  ({})

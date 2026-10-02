@@ -2,7 +2,9 @@ import {IdentifierService} from "@core/service/identifier/Identifier.service";
 import {BaseService} from "@core/base/BaseService";
 import {DbService} from "@core/datab/db.service";
 import {Injectable} from '@nestjs/common';
-import {entity} from "@route/user/config";
+import config from "./config"
+
+const {entity} = config();
 
 
 @Injectable({})

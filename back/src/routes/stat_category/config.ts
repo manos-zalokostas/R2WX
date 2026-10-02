@@ -1,14 +1,15 @@
 import {ACCESS, PATH} from "@core/config/app.constants";
 import {statCategoryScheme} from "@r2wx/modules";
 
-export const entity = 'STAT_CATEGORY';
 
-export const path = 'stat_category';
-
-export const api = {
+export default () => ({
+ path : 'stat_category',
+ entity : 'STAT_CATEGORY',
+    // @ts-ignore
+ type : statCategoryScheme(),
+ api : {
     GET: {
         [PATH._]: [ACCESS.GLOB],
     },
-}
-
-export const type = statCategoryScheme
+},
+})

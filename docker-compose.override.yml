@@ -48,8 +48,8 @@ services:
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: "true"
-      ENV_DBHOST: database
-      ENV_DBURL: "mysql://${ENV_DBUSER}:${ENV_DBPASS}@database:3306/${ENV_DBNAME}"
+      ENV_DBHOST: "${ENV_DBHOST}"
+      ENV_DBURL: "${ENV_DBURL}"
     depends_on:
       database:
         condition: service_healthy

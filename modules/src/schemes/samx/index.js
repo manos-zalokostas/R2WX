@@ -1,6 +1,7 @@
 import {T, MIME} from "../extra.js";
 
-export const samxScheme = {
+
+export const samxScheme = () => ({
 // id Int @id @default(autoincrement())
     "id": {...T.NUMB, required: false},
 
@@ -66,6 +67,6 @@ export const samxScheme = {
 
 // updated DateTime @updatedAt
     "updated": {...T.DATE, required: false},
-};
+});
 
 export default samxScheme;

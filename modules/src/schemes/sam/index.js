@@ -1,6 +1,6 @@
 import { T, MIME } from "../extra.js";
 
-export const samScheme = {
+export const samScheme = () => ({
     "id": { ...T.NUMB, required: false },
     "name": T.TEXT,
     "number": { ...T.NUMB, min: 1, max: 15 },
@@ -13,6 +13,6 @@ export const samScheme = {
     "files": { ...T.FILE, accept: [...T.FILE.accept, MIME.PDF], multiple: true, size: 1e6 },
     "created": { ...T.DATE, required: false },
     "updated": { ...T.DATE, required: false },
-};
+});
 
 export default samScheme;

@@ -31,7 +31,7 @@
                         uri : {post: apiPath("ticket")},
                         blockConfirm: true,
                         redirect: {
-                        post: "/"
+                            post: "/"
                    }
                }}/>
 

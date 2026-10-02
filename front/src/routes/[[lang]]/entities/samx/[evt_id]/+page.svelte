@@ -4,6 +4,7 @@
     import {PAGE, TOOL} from "$var";
     import {apiPath} from "$lib";
     import ctx from "../ctx.js";
+    import {page} from "$app/stores";
 
     const {entity, typ, lit} = ctx();
 
@@ -11,8 +12,10 @@
 
 <Wrapper ctx={PAGE.SAMX}>
 
-    <R2wxFormGeneric blockEdit ctx={{
-        api: {post: apiPath(entity)}
+    <R2wxFormGeneric ctx={{
+        uri: {
+            all: apiPath(entity, $page.data.params.evt_id),
+        }
     }}/>
 
 </Wrapper>

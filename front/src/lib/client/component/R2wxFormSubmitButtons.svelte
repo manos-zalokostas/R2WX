@@ -54,6 +54,7 @@
                 onclick={async ()=>{
                     $ui.confirmBox = 0;
                     $ui.alertBox.status = (REQ.WAIT)
+                    console.log({ctx})
                     let uri =  ctx.uri.put || ctx.uri.all, data ;
                     if($action.submit) data = $action.submit();
                     const res = await formPut({uri, data, redirect: $action?.redirect?.put})

@@ -2,8 +2,9 @@ import {MulterService} from "@core/service/multer/Multer.service";
 import {BaseController} from "@core/base/BaseController";
 import {SamService} from "@route/sam/Sam.service";
 import {Controller, Get,} from '@nestjs/common';
-import {path, type, api} from "./config";
+import config from "./config";
 
+const {path, type, api} = config();
 
 /**
  *

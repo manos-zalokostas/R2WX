@@ -25,17 +25,6 @@ export class MulterService {
     }
 
 
-    // NEW: This method is for your asynchronous `createMultiWS` endpoint.
-    // It's simpler because it just accepts any file.
-    async processWs(
-        @Req() req: Request,
-        @Res() res: Response
-    ): Promise<void> {
-        // Use a default generous limit.
-        const upload = this._getMulterInstance(100 * 1024 * 1024); // 100MB
-        const multerHandler = upload.any();
-        await this._invokeMiddleware(multerHandler, req, res);
-    }
 
     // Private helper to create the multer instance (DRY principle).
     private _getMulterInstance(maxSize: number) {

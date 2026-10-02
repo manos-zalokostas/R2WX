@@ -1,4 +1,4 @@
-export const samLit = {
+export const samLit = () => ({
     "name": 'TEXT',
     "number": 'NUMBER',
     "float": 'FLOAT',
@@ -12,6 +12,6 @@ export const samLit = {
 
     "created": 'DATE-CREATE',
     "updated": 'DATE-UPDATE',
-};
+});
 
 export default samLit;
