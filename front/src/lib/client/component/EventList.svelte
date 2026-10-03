@@ -12,10 +12,6 @@
     const {list, hidden} = $props();
     const _dt = x => +x.split('T').shift().split('-').join('')
 
-    // const d = $page.data;
-    // debugger
-
-
 </script>
 
 

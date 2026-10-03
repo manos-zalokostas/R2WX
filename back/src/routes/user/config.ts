@@ -1,5 +1,5 @@
 import {ACCESS, PATH} from "@core/config/app.constants"
-import {T, userAuthScheme} from "@r2wx/modules"
+import {userAuthScheme} from "@r2wx/modules"
 
 export default () => ({
     path: 'user',

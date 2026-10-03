@@ -9,7 +9,6 @@
 
     const onclick = (mode = FORM.ADD, evt) => {
         evt.preventDefault();
-        debugger
         clearFormReports();
         $form.mode = mode;
         if ([FORM.ADD, FORM.EDIT].includes(mode)) {

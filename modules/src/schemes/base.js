@@ -1,4 +1,4 @@
-export const _T = {
+export const _T = Object.freeze({
     TEXT: "text",
     NUMB: "number",
     FLOA: "number",
@@ -13,9 +13,9 @@ export const _T = {
     EMAI: 'email',
     DATE: 'date',
     FILE: 'file'
-};
+})
 
-export const MIME = {
+export const MIME = Object.freeze({
     JPG: '.jpg',
     PNG: '.png',
     XML: ".xml",
@@ -24,7 +24,7 @@ export const MIME = {
     PDF: ".pdf",
     MAT: '.mat',
     M: '.m',
-};
+});
 
 export const TD = {
     TEXT: {
@@ -153,3 +153,4 @@ export const TD = {
         title: "Please enter a valid email address (e.g., name@example.com).",
     },
 };
+
