@@ -41,18 +41,11 @@ export default {
     },
 
 
-    /**
-     *
-     * @param path
-     * @param request
-     * @returns {Promise<Response>}
-     */
-    async streamProxy(path, request) {
+    async streamProxy(path, request, method = 'POST') {
 
-        const url = this.url(path, ENV_DATASERVER)
+        const url = this.url(path, ENV_DATASERVER);
 
         const head = new Headers(request.headers);
-
         const headAuth = _headers(true);
 
         head.set('Authorization', headAuth['Authorization']);
@@ -62,8 +55,7 @@ export default {
             const res = await fetch(url, {
                 headers: new Headers(head),
                 body: request.body,
-                method: 'POST',
-                // 4. CRITICAL: This is required for streaming request bodies in Node's fetch.
+                method, // <-- Dynamically supports 'PUT' or 'POST'
                 duplex: 'half'
             });
 
@@ -71,12 +63,10 @@ export default {
 
         } catch (error) {
             console.error('Error proxying request to Core API:', error);
-            return new Response('Error connecting to the backend service.', {status: 502}); // 502 Bad Gateway
+            return new Response('Error connecting to the backend service.', {status: 502});
         }
-
     }
 }
-
 
 /**
  *

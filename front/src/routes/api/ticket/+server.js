@@ -9,7 +9,7 @@ import {ROLE} from "$var";
  * @constructor
  */
 export async function POST(ctx) {
-debugger
+
     const Auth = _authall();
 
     let user = await Auth.login(ctx)

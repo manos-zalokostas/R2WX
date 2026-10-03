@@ -24,8 +24,6 @@
         files = [...evt.target.files].map(o => o.name)
     }
 
-    const d = $page.data;
-
 </script>
 
 {#if input.value}
@@ -41,9 +39,12 @@
             </a>
         {/each}
     </nav>
+{/if}
 
-{:else}
-    <input {...input}
+{#if !disabled}
+    {@const { value, ...inputCurr } = input}
+    <input {...inputCurr}
+           required={input.value ? false : inputCurr.required}
            class="r2wx-form-input {disabled ? 'disabled' : ''}"
            onchange={evalMultiSelect}
            oninput={clearInputReport}/>
@@ -62,12 +63,7 @@
     nav {
         color: var(--r2wx-color-blue);
         padding: 10px 0;
-    /*    width: 100%;*/
-    /*    height: 45px;*/
-    /*    border: none;*/
-    /*    outline: none;*/
         border-top: 1px solid #bbb !important;
-    /*    background: none;*/
 
         a {
             display: flex;
@@ -79,28 +75,5 @@
                 width: 22px;
             }
         }
-    /*}*/
-
-    /*input {*/
-    /*    padding: 10px 0;*/
-    /*    width: 100%;*/
-    /*    height: 45px;*/
-    /*    border: none;*/
-    /*    outline: none;*/
-    /*    color: white;*/
-    /*    border-top: 1px solid #bbb !important;*/
-    /*    background: var(--r2wx-color-grey-dark) !important;*/
-
-    /*    &:hover {*/
-    /*        border: 1px solid #bbb;*/
-    /*    }*/
-
-    /*    &.disabled {*/
-    /*        border: none;*/
-    /*        background: none !important;*/
-    /*    }*/
-
     }
-
-
 </style>

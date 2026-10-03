@@ -272,6 +272,100 @@ export class BaseController {
     }
 
 
+
+    /**
+     * R2WX EXTENSION EXPERIMENT — GOOGLE GEMINI
+     *
+     * This multipart PUT flow was produced by Gemini after being
+     * asked to study and reuse the existing R2WX infrastructure
+     * to implement the missing multipart update path.
+     *
+     * Human-reviewed after generation.
+     */
+    @Put(PATH.MULTI_ID)
+    async updateMulti(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: RequestAuthz,
+        @Res() res: Response
+    ) {
+        let files: Express.Multer.File[] = [];
+
+        try {
+            console.log(" -- API INVOKED:: PUT-MULTIPART-ONE");
+            console.log(" -- AUTHZ REQUEST ROLE ==============> ", req.userAccess);
+
+            // 1. Invariant Access Check
+            this._assureEndpointAccessible(HTTP.PUT, PATH.MULTI_ID, req.userAccess);
+
+            // 2. Fetch existing entity to determine existing files and ensure record exists
+            let clause = { where: { id } };
+            const existingRecord = await this.service.findUnique(clause);
+            if (!existingRecord) throw ERR.FRNO;
+
+            // 3. Partition rules into scalar body and file definitions
+            const { ruleBody, ruleFile } = this._splitRules();
+
+            // 4. Stream and write new files via Multer
+            await this.svMulter.processHttp(req, res, ruleFile);
+            files = Object.values(req.files || {}).flat();
+
+            // 5. Validate only the newly uploaded files against schema properties
+            files.forEach(file => {
+                const schemeCurr = ruleFile[file.fieldname];
+                if (!this.validate.file(file, schemeCurr)) throw ERR.INPUT;
+            });
+
+            // 6. Map uploaded files into field arrays
+            const newFilesMap = files.reduce((acc, f) => {
+                acc[f.fieldname] = acc[f.fieldname] ? [...acc[f.fieldname], f] : [f];
+                return acc;
+            }, {});
+
+            // 7. Validate scalar payload using LOOSE mode (supports partial updates)
+            if (req.body && Object.keys(req.body).length > 0) {
+                this._assureDataValid(req.body, VALID.LOOSE, ruleBody);
+            }
+
+            // 8. Handle file replacement & disk cleanup for fields that were overwritten
+            const filesToUnlink: string[] = [];
+            Object.keys(newFilesMap).forEach(fieldname => {
+                const oldFiles = existingRecord[fieldname];
+                if (Array.isArray(oldFiles)) {
+                    oldFiles.forEach(oldFile => {
+                        if (
+                            oldFile?.path &&
+                            oldFile.path.startsWith('uploads') &&
+                            !oldFile.path.includes("..") &&
+                            !oldFile.path.includes("FILE_DEFAULT_PDF")
+                        ) {
+                            filesToUnlink.push(oldFile.path);
+                        }
+                    });
+                }
+            });
+
+            // 9. Prepare merged update payload (retain existing files if not re-uploaded)
+            const updatePayload = {
+                ...req.body,
+                ...newFilesMap, // Overwrites updated file fields; omitted fields remain untouched
+            };
+
+            // 10. Persist update in DB and unlink superseded files
+            const [updatedData] = await Promise.all([
+                this.service.update(updatePayload, clause),
+                ...filesToUnlink.map(path => fs.promises.unlink(path).catch(() => null))
+            ]);
+
+            return this._reply([updatedData, null], res);
+
+        } catch (error) {
+            // Rollback: Unlink any newly uploaded files if validation or DB update failed
+            files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
+            return this._reply([null, error], res);
+        }
+    }
+
+
     /**
      *
      * @param id

@@ -28,32 +28,36 @@ export async function DELETE(ctx) {
     }
 }
 
-
+/**
+ * R2WX EXTENSION EXPERIMENT — GOOGLE GEMINI
+ *
+ * This multipart PUT flow was produced by Gemini after being
+ * asked to study and reuse the existing R2WX infrastructure
+ * to implement the missing multipart update path.
+ *
+ * Human-reviewed after generation.
+ */
 export async function PUT(ctx) {
     try {
-
         const Auth = _authall();
         if (!Auth.accessRole(ctx, ROLE.GLOB)) return _reply({error: 'NOROL'});
 
+        // Resolves nested path: e.g. "sam/multipart/12"
         const path = [
             ctx.params.tool_id,
+            'multipart',
             ctx.params.id,
-        ].join("/")
+        ].join("/");
 
-        const data = await ctx.request.json();
-        console.log(" -- PUT:: PATH / DATA:: ", {path, data})
+        console.log(" -- PUT MULTIPART:: PATH:: ", path);
 
-        delete data.file
-        delete data.files
-        delete data.file_def
+        // Uses the existing streamProxy with method parameter set to PUT
+        const res = await httpServer.streamProxy(path, ctx.request, 'PUT');
 
-        const res = await httpServer.put(path, data)
-
-        console.log(" -- PUT:: RES:: ", res)
-        return _reply(res);
+        return res;
 
     } catch (error) {
-        console.log("++++++++++++++++++++++", error)
+        console.log(" -- PUT MULTIPART PROXY ERROR: ", error);
         throw new Error(error);
     }
 }
