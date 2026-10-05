@@ -14,10 +14,21 @@ architecture, a framework others are expected to adopt, or a catalogue
 of every engineering practice available to its author. It is published
 to make a piece of engineering work transparent and inspectable.
 
+R2WX uses established technologies in intentionally unorthodox ways.
+Familiarity with SvelteKit, NestJS, Prisma or conventional CRUD
+organization is useful context, but it is not a substitute for tracing
+R2WX's own cross-end contracts and responsibility boundaries.
+
 The repository concentrates on a complete cross-end flow: shared entity
 semantics, runtime-specific configuration, form realization, CRUD
 lifecycle, validation, JSON and multipart transport, file handling,
 controller/service behavior and persistence.
+
+Here, **schema-driven** refers to shared application schemes that carry
+recurring entity semantics for multiple runtime consumers. It does not
+imply code generation or a universal schema that governs every
+subsystem; persistence retains its own authority through Prisma and
+MySQL.
 
 The central idea is simple:
 
@@ -78,11 +89,13 @@ The diagram is intentionally asymmetric. The frontend and backend share
 application knowledge; they do not share the same responsibilities.
 
 `ctx.js` and `config.ts` are the dominant runtime-specific configuration
-structures. Each consumes the shared scheme and adds information
-belonging to its own runtime. On the frontend that knowledge
-participates in representation and interaction. On the backend it
-participates in endpoint exposure, authorization, validation, ingestion
-and persistence flow.
+structures. Concrete resident instances can be inspected in frontend
+entity routes such as `front/src/routes/[[lang]]/entities/sam/ctx.js` and
+backend routes such as `back/src/routes/sam/config.ts`. Each consumes the
+shared scheme and adds information belonging to its own runtime. On the
+frontend that knowledge participates in representation and interaction.
+On the backend it participates in endpoint exposure, authorization,
+validation, ingestion and persistence flow.
 
 **Shared knowledge does not require identical runtimes.**
 
@@ -93,7 +106,9 @@ and persistence flow.
 An entity scheme carries recurring application semantics such as field
 identity and input-oriented type information, requiredness and scalar
 constraints, defaults, file acceptance and size rules, and values needed
-by form and validation machinery.
+by form and validation machinery. Canonical resident scheme factories
+live under `modules/src/schemes/`; for example,
+`modules/src/schemes/sam/index.js` exposes `samScheme()`.
 
 That information is consumed differently across the stack. On the
 frontend, it helps materialize forms, native HTML constraints and
@@ -154,6 +169,8 @@ security or acceptance boundary.
 
 ### Frontend: `ctx.js`
 
+A concrete example is `front/src/routes/[[lang]]/entities/sam/ctx.js`.
+
 The frontend context combines shared entity knowledge with information
 required by the Svelte runtime. `packEntityForm()` can combine the
 entity scheme, literals, existing entity data, runtime rules and
@@ -163,6 +180,8 @@ The result is not prebuilt HTML. It is a representation from which the
 frontend realizes the required interaction.
 
 ### Backend: `config.ts`
+
+A concrete example is `back/src/routes/sam/config.ts`.
 
 The backend configuration carries information specific to the core API:
 entity identity, paths, API exposure and access configuration.
@@ -403,6 +422,44 @@ procedure differs.
 
 ------------------------------------------------------------------------
 
+## Inherited capability, explicit exposure
+
+Shared controller infrastructure can provide more capability than a
+particular resident should expose. R2WX separates those two concerns.
+
+`BaseController` owns reusable endpoint procedure. A resident inherits
+that capability, but inheritance alone does not make every operation part
+of the resident's API contract. The resident's backend `config.ts` must
+explicitly admit the HTTP verb, path and access classification.
+`BaseController._assureEndpointExposed()` enforces that admission at
+runtime.
+
+``` text
+BaseController capability
+        │
+        │ inherited
+        ▼
+resident controller
+        │
+        │ config.ts admits verb / path / access
+        ▼
+_assureEndpointExposed()
+        │
+        ├── declared ──► operation may continue
+        └── absent   ──► operation rejected
+```
+
+> **Reusable implementation is inherited broadly. Exposure is granted
+> narrowly.**
+
+This is separate from browser-facing human authorization. The SvelteKit
+BFF remains the human authentication/authorization boundary and reaches
+the hidden core API as a trusted service identity. Capability admission
+then constrains which inherited operations belong to a resident even
+inside that trusted service path.
+
+------------------------------------------------------------------------
+
 ## 75/25: infrastructure coverage
 
 R2WX was built around an approximate engineering heuristic: recurring
@@ -509,19 +566,29 @@ the final structural persistence boundary.
 
 ## Representative residents
 
+A **resident** is an application-specific entity or tool attached to and
+served by the shared R2WX infrastructure. It is not synonymous with its
+scheme: the scheme carries shared application semantics, while the
+resident also has runtime-specific attachment points such as frontend
+context/routes and backend configuration/controller/service structure.
+
 R2WX includes residents with different requirements so that the shared
 machinery is exercised through more than one shape of problem.
 
-**SAM-X** exercises generic form realization, scalar CRUD behavior and
-lookup-backed runtime options.
+**SAM-X** (backend: `back/src/routes/samx/`; frontend entity routes under
+`front/src/routes/[[lang]]/entities/samx/`) exercises generic form
+realization, scalar CRUD behavior and lookup-backed runtime options.
 
-**SAM** exercises custom form realization, multipart transport and file
-lifecycle behavior while remaining connected to the same broader
-entity-management infrastructure.
+**SAM** (backend: `back/src/routes/sam/`; frontend entity routes under
+`front/src/routes/[[lang]]/entities/sam/`) exercises custom form
+realization, multipart transport and file lifecycle behavior while
+remaining connected to the same broader entity-management
+infrastructure.
 
-**USER** exercises a different kind of specialization. Authentication is
-not ordinary entity CRUD, so its controller/service path demonstrates
-reuse of infrastructure primitives inside a handwritten procedure.
+**USER** (backend: `back/src/routes/user/`) exercises a different kind of
+specialization. Authentication is not ordinary entity CRUD, so its
+controller/service path demonstrates reuse of infrastructure primitives
+inside a handwritten procedure.
 
 These residents are not presented as evidence that R2WX covers every
 possible application. They make different parts of the infrastructure
@@ -534,7 +601,9 @@ inspectable.
 R2WX asks what happens when recurring full-stack entity knowledge is
 organized around the application's own shared semantics rather than
 repeatedly re-expressed according to every framework boundary it
-crosses.
+crosses. Repeated code is visible; the deeper problem is repeated
+ownership of the same application knowledge, because independently
+maintained declarations can diverge as that knowledge changes.
 
 The implementation arrived at a more specific answer than "make
 everything declarative."
@@ -563,4 +632,100 @@ directly.
 
 ## Scope
 
-R2WX 
+R2WX is deliberately scoped around the engineering concerns described
+above.
+
+It is not being developed as a comprehensive general-purpose framework,
+a hosted product, or a prescribed application architecture. Its public
+form exists so that its cross-end design and implementation can be
+examined.
+
+That scope also means the repository is not being polished toward an
+abstract definition of completeness. Small implementation scars can
+remain where they do not obscure the engineering being demonstrated.
+
+The important question for this repository is not whether every
+conceivable framework feature or development practice has been
+incorporated.
+
+It is whether the cross-end infrastructure described here is visible,
+executable and inspectable.
+
+------------------------------------------------------------------------
+
+## Repository shape
+
+``` text
+R2WX
+├── front/
+│   ├── Svelte 5 / SvelteKit
+│   ├── runtime contexts
+│   ├── form infrastructure
+│   ├── BFF routes
+│   └── authentication/session boundary
+│
+├── back/
+│   ├── NestJS core API
+│   ├── runtime configuration
+│   ├── BaseController
+│   ├── BaseService
+│   ├── Validation
+│   ├── Multer/file infrastructure
+│   └── Prisma integration
+│
+├── modules/
+│   └── shared scheme vocabulary and resident schemes
+│
+├── database/
+│   └── persistence-related material
+│
+└── Docker Compose
+    └── runnable cross-end environment
+```
+
+The workspace is conceptually decomposed but runs as a composed
+application. R2WX does not claim that these concerns are independently
+distributable framework packages.
+
+------------------------------------------------------------------------
+
+## A useful inspection path
+
+For a first pass through the repository:
+
+1.  Start with a resident scheme under `modules/src/schemes/`, such as
+    `modules/src/schemes/sam/index.js` and `samScheme()`.
+2.  Follow that resident into frontend `ctx.js` and backend `config.ts`.
+3.  Inspect how `packEntityForm()` turns the frontend side into a
+    working representation.
+4.  Follow the shared `FORM` state through fieldsets, mode controls,
+    confirmation and submission.
+5.  Trace default form collection into JSON/FormData selection.
+6.  Follow multipart requests through the SvelteKit streaming proxy.
+7.  Continue into `BaseController`, `_splitRules()` and schema-derived
+    Multer configuration.
+8.  Compare `Validation.strict()` with `Validation.loose()` and its
+    projected validation scope.
+9.  Compare inherited `BaseController` capability with the operations
+    explicitly admitted by a resident `config.ts` and enforced through
+    `_assureEndpointExposed()`.
+10. Follow the operation through `BaseService` into Prisma/MySQL.
+11. Inspect the places where residents leave the default road: custom
+    form composition, `$action.submit()`, dynamic option enrichment and
+    specialized controller/service behavior.
+
+That path exposes the main question R2WX was built to investigate
+without requiring the repository to be read linearly.
+
+------------------------------------------------------------------------
+
+## Status
+
+R2WX is a personal full-stack R&D artifact published for transparency.
+
+It represents a concrete implementation of an engineering direction
+rather than a recommendation that others adopt that direction. Its
+purpose here is to make the work inspectable: the shared knowledge, the
+runtime interpretations, the reusable machinery, the deliberate exits
+from that machinery, and the boundaries where another authority takes
+over.
