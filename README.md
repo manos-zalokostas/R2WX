@@ -424,33 +424,45 @@ procedure differs.
 
 ## Inherited capability, explicit exposure
 
-Shared controller infrastructure can provide more capability than a
-particular resident should expose. R2WX separates those two concerns.
+**Inherited API capabilities are sealed by default.**
 
-`BaseController` owns reusable endpoint procedure. A resident inherits
-that capability, but inheritance alone does not make every operation part
-of the resident's API contract. The resident's backend `config.ts` must
-explicitly admit the HTTP verb, path and access classification.
+`BaseController` supplies reusable endpoint capabilities to resident
+controllers through inheritance, but inheritance alone does **not** expose
+them. A resident's backend `config.ts` must explicitly admit the HTTP
+verb, path and access classification that belong to its API.
+
+A representative `api` configuration has this shape:
+
+```ts
+api: {
+  GET: {
+    [PATH._]: [ACCESS.GLOB],
+    [PATH.ID]: [ACCESS.GLOB],
+    [PATH.LATE]: [ACCESS.GLOB],
+  },
+
+  POST: {
+    [PATH.MULTI]: [ACCESS.GLOB],
+  },
+
+  PUT: {
+    // ...
+  },
+
+  DELETE: {
+    // ...
+  },
+}
+```
+
 `BaseController._assureEndpointExposed()` enforces that admission at
 runtime.
 
-``` text
-BaseController capability
-        │
-        │ inherited
-        ▼
-resident controller
-        │
-        │ config.ts admits verb / path / access
-        ▼
-_assureEndpointExposed()
-        │
-        ├── declared ──► operation may continue
-        └── absent   ──► operation rejected
-```
+> **Inherited + undeclared → SEALED**  
+> **Inherited + explicitly declared → EXPOSED**
 
-> **Reusable implementation is inherited broadly. Exposure is granted
-> narrowly.**
+Sealed means unavailable through that resident's API; it does not mean
+the inherited implementation has been removed.
 
 This is separate from browser-facing human authorization. The SvelteKit
 BFF remains the human authentication/authorization boundary and reaches
@@ -462,28 +474,23 @@ inside that trusted service path.
 
 ## 75/25: infrastructure coverage
 
-R2WX was built around an approximate engineering heuristic: recurring
-infrastructure should be capable of carrying a substantial portion of
-ordinary entity-management work, while application-specific behavior
-remains available where the common path no longer fits.
+**~75% = shared infrastructure**  
+Conventional database-backed entity CRUD after the resident has been
+instantiated and its paths/configuration are in place: CRUD flow, form
+lifecycle, transport, validation, controller/service handling and
+persistence flow.
 
-The shorthand for that objective is **75/25**.
+**~25% = application-specific procedure**  
+Behavior that departs from that recurring CRUD path: complex procedures,
+coordination across additional services, partial reuse of shared
+procedures, or specialized operations such as authentication.
 
-It is not a measured source-code ratio. It is not a claim that every
-resident receives exactly 75% automation. It is not a restriction saying
-a developer has only 25% freedom.
+> **More deviation from the recurring CRUD path → less infrastructure
+> coverage → more application-specific procedure.**
 
-It describes intended **coverage of recurring problem space**.
-
-R2WX structures recurring CRUD, API, service/model handling, form
-behavior, validation, transport and file-management capabilities in
-shared infrastructure. A resident must still be explicitly instantiated
-and wired into that structure.
-
-> **R2WX reduces recurring implementation. It does not eliminate
-> resident instantiation.**
-
-> **Coverage is not a measure of developer freedom.**
+`75/25` is an approximate coverage heuristic, not a measured or required
+ratio. A resident must still be explicitly instantiated and wired into
+the infrastructure.
 
 ------------------------------------------------------------------------
 
@@ -517,6 +524,11 @@ payload.
 At the BFF-to-core boundary, the BFF acts as a trusted service identity
 using configured authorization material. The core API is intended to
 live behind that boundary rather than serve as the browser-facing API.
+
+> **Human identity → BFF authorization**  
+> **BFF service identity → core API authorization**
+>
+> The human profile role is not propagated as the core service identity.
 
 The repository exposes development ports because it is distributed as a
 runnable development artifact. That exposure should not be confused with
@@ -571,6 +583,10 @@ served by the shared R2WX infrastructure. It is not synonymous with its
 scheme: the scheme carries shared application semantics, while the
 resident also has runtime-specific attachment points such as frontend
 context/routes and backend configuration/controller/service structure.
+
+> **Resident ≠ scheme**  
+> `SAM` is the resident; `samScheme()` describes shared application
+> knowledge used to serve it.
 
 R2WX includes residents with different requirements so that the shared
 machinery is exercised through more than one shape of problem.
