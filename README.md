@@ -39,6 +39,24 @@ The central idea is simple:
 
 ------------------------------------------------------------------------
 
+## Engineering exploration
+
+A complete engineering examination of R2WX is available alongside the
+implementation:
+
+**[R2WX [2024] — An Engineering Exploration](docs/examination/R2WX-2024-An-Engineering-Exploration.pdf)**
+
+The document follows eight interconnected engineering pressures across the
+artifact: knowledge reliability, ownership, repeated implementation,
+automation, capability exposure, identity, boundary responsibility and
+persistence authority.
+
+It examines how those pressures shaped the infrastructure represented in
+this repository, with implementation evidence, code excerpts and diagrams
+drawn from R2WX.
+
+------------------------------------------------------------------------
+
 ## The system in one view
 
 ``` text
