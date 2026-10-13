@@ -1,7 +1,7 @@
 export const _T = Object.freeze({
     TEXT: "text",
     NUMB: "number",
-    FLOA: "number",
+    FLOA: "float",
     TEXA: "textarea",
     SWIT: "switch",
     SWIG: "switch-group",

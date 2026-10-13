@@ -15,32 +15,6 @@
 </script>
 
 
-<input {...input}
+<input {...{...input, type: input.type === 'float' ? "number" : input.type}}
        class="r2wx-form-input {disabled ? 'disabled' : ''}"
        oninput={clearInputReport}/>
-
-
-<style>
-
-    /*input {*/
-    /*    padding: 10px 0;*/
-    /*    width: 100%;*/
-    /*    height: 45px;*/
-    /*    border: none;*/
-    /*    outline: none;*/
-    /*    color: white;*/
-    /*    border-top: 1px solid #bbb !important;*/
-    /*    background: var(--r2wx-color-grey-dark) !important;*/
-
-    /*    &:hover {*/
-    /*        border: 1px solid #bbb;*/
-    /*    }*/
-
-    /*    &.disabled {*/
-    /*        border: none;*/
-    /*        background: none !important;*/
-    /*    }*/
-
-    /*}*/
-
-</style>

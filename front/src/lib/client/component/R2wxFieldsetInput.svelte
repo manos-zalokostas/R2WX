@@ -35,7 +35,7 @@
               style={input['data-field-hidden']  ? "display: none" : ''}
               class:datefield={input.type === 'date'}>
 
-        {#if ['text', 'number', 'password', 'email'].includes(input.type)}
+        {#if ['text', 'number', 'float', 'password', 'email'].includes(input.type)}
 
             <R2wxInputLabel {id}/>
             <R2wxInput {id}/>
