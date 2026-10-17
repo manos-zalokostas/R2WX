@@ -1,10 +1,10 @@
 {
   "name": "back",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "author": "Manos Zalokostas",
+  "description": "Personal full-stack R&D project exploring declarative entity configuration and reusable application mechanisms across SvelteKit, NestJS, and Prisma.",
   "engines": {
     "node": "22"
   },
