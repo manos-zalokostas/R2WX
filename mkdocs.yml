@@ -1,0 +1,47 @@
+site_name: R2WX [2024] — An Engineering Exploration
+site_description: A personal full-stack R&D engineering examination of R2WX.
+# Set site_url to your actual GitHub Pages URL after deployment.
+repo_name: R2WX source repository
+# Add repo_url after confirming the exact repository URL.
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+nav:
+  - Introduction: index.md
+  - Eight Engineering Explorations:
+      - "01 — When One Change Started Requiring Too Many Changes": chapters/01-repeated-knowledge.md
+      - "02 — When Sharing Knowledge Started Blurring Ownership": chapters/02-knowledge-and-ownership.md
+      - "03 — When Shared Knowledge Started Repeating the Same Work": chapters/03-repeated-procedure.md
+      - "04 — When Automation Started Fighting the Application": chapters/04-specialization.md
+      - "05 — When Inheritance Started Giving Too Much": chapters/05-capability-exposure.md
+      - "06 — When One User Request Became Two Different Identities": chapters/06-identity-boundaries.md
+      - "07 — When the Boundary Started Doing Too Much Work": chapters/07-transport-boundaries.md
+      - "08 — When Consolidation Stopped at Persistence": chapters/08-persistence-authority.md
+  - Conclusion: conclusion.md
+  - Investigation Design: investigation-design.md
+  - Complete Report (PDF): R2WX-2024-An-Engineering-Exploration.pdf
+extra_css:
+  - assets/extra.css
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight

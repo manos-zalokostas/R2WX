@@ -1,0 +1,7 @@
+/* Presentation only; content is derived from the original PDF. */
+.md-typeset {font-size:.78rem;line-height:1.75}
+.md-typeset h1 {font-weight:750;letter-spacing:-.02em}
+.md-typeset h2 {margin-top:1.8em;font-weight:650}
+.md-typeset .r2wx-exhibit {background:#f3f3f3;color:#202733;padding:15px;border-radius:7px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.69rem;line-height:1.45;white-space:pre;tab-size:4}
+[data-md-color-scheme="slate"] .md-typeset .r2wx-exhibit {background:#273141;color:#f2f5f9}
+.md-typeset blockquote {border-left:3px solid var(--md-accent-fg-color);padding:.2em 1em}
