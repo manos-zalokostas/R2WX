@@ -1,4 +1,12 @@
-# R2WX
+<p align="center">
+  <img
+    src="front/static/R2WX-BANNER.png"
+    alt="R2WX — Full-Stack Application Infrastructure"
+    width="100%"
+  />
+</p>
+
+# R2WX | Road to Webbox
 
 **Personal full-stack R&D infrastructure for schema-driven REST/CRUD
 entity management**
